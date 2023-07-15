@@ -2,7 +2,8 @@ target/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
-/src/main/config/config/config.properties
+config/
+src/main/config/config/readme.txt
 
 ### IntelliJ IDEA ###
 .idea/modules.xml
