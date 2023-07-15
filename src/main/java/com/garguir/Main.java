@@ -1,10 +1,9 @@
 package com.garguir;
 
-import com.garguir.util.Config;
+import com.garguir.repository.RepositoryConnection;
 
 public class Main {
     public static void main(String[] args) {
-        Config.getConfig();
-        System.out.println("Hello world!");
+        RepositoryConnection.getInstance().saveProjectNames();
     }
 }
