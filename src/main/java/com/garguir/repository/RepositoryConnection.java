@@ -10,12 +10,12 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.List;
 
-import static com.garguir.util.UtilGitLabRepositoryScanner.USER_DIR;
+import static com.garguir.util.UtilGitLabRepositoryScanner.PATH_SAVED_FILES;
 import static com.garguir.util.UtilGitLabRepositoryScanner.log;
 
 public class RepositoryConnection {
     private static final String PATH = "https://gitlab-prd.intranet.local/";
-    private static final String PATH_SAVED_FILES = USER_DIR+"\\savedFiles";
+    private static final String PATH1 = "https://github.com/TechMDQLabV";
     private static final String BLR = "blr";
     private static final String MBR = "mbr";
     private static final String MDS = "mds";
@@ -28,7 +28,7 @@ public class RepositoryConnection {
 
     private RepositoryConnection(){
         try {
-            gitLabApi =  GitLabApi.oauth2Login(PATH+BLR, USER, PASS);
+            gitLabApi =  GitLabApi.oauth2Login(PATH+BLR, USER, PASS.toCharArray(), true);
             projectList = gitLabApi.getProjectApi().getProjects();
             log().info("Open Repository Successfully");
         } catch (GitLabApiException e) {
@@ -68,7 +68,7 @@ public class RepositoryConnection {
             bufferedWriter.close();
             log().info("File saved successfully");
         }catch (IOException ioException){
-            log().warning("Error: fail writing file" + ioException);
+            log().warning("Error: fail writing file: " + ioException);
         }
     }
 }
