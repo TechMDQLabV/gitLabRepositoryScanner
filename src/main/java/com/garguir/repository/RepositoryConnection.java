@@ -1,39 +1,38 @@
 package com.garguir.repository;
 
 import com.garguir.util.Config;
-import org.gitlab4j.api.GitLabApi;
-import org.gitlab4j.api.GitLabApiException;
-import org.gitlab4j.api.models.Project;
+import org.json.simple.parser.ParseException;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
+import java.io.BufferedReader;
 import java.io.IOException;
-import java.util.List;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 
-import static com.garguir.util.UtilGitLabRepositoryScanner.PATH_SAVED_FILES;
 import static com.garguir.util.UtilGitLabRepositoryScanner.log;
 
 public class RepositoryConnection {
-    private static final String PATH = "https://gitlab-prd.intranet.local/";
-    private static final String PATH1 = "https://github.com/TechMDQLabV";
+    private static final String PATH = "https://gitlab-prd.intranet.local/api/v4/groups/blr/projects";
     private static final String BLR = "blr";
     private static final String MBR = "mbr";
     private static final String MDS = "mds";
     private static final String SPACE = " ";
+    private static final String LINE_BREAK = "\n";
+    private static final String ANPERSAND = "&";
+    private static final String QUESTION_MARK = "?";
+    private static final String EQUAL_SIGN = "=";
+    private static final String PAGE = "page";
+    private static final String PER_PAGE = "per_page";
+    private static final String GET = "GET";
     private static final String USER = Config.getConfig().getUser();
     private static final String PASS = Config.getConfig().getPass();
-    private static GitLabApi gitLabApi;
-    private static List<Project> projectList;
+    private static final String TOKEN = Config.getConfig().getToken();
+    private static int page = 1;
+    private static int per_page = 1000;
     private static RepositoryConnection instance;
 
     private RepositoryConnection(){
-        try {
-            gitLabApi =  GitLabApi.oauth2Login(PATH+BLR, USER, PASS.toCharArray(), true);
-            projectList = gitLabApi.getProjectApi().getProjects();
-            log().info("Open Repository Successfully");
-        } catch (GitLabApiException e) {
-            log().warning("Error opening Repository: " + e);
-        }
+
     }
 
     public static RepositoryConnection getInstance(){
@@ -43,32 +42,32 @@ public class RepositoryConnection {
         return instance;
     }
 
-    public GitLabApi getConnection() {
-        return gitLabApi;
-    }
+    public void saveFile(){
+        try {
+            URL url =  new URL(PATH + QUESTION_MARK + PAGE + EQUAL_SIGN + page + ANPERSAND + PER_PAGE + EQUAL_SIGN + per_page);
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod(GET);
+            connection.setRequestProperty("Private-Token", TOKEN);
 
-    public List<Project> getProjectList(){
-        return projectList;
-    }
-
-    public int countProjects(){
-        return projectList.size();
-    }
-
-    public void saveProjectNames(){
-        StringBuilder stringBuilder = new StringBuilder();
-        try{
-            BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(PATH_SAVED_FILES));
-
-            for(Project project : projectList) {
-                stringBuilder.append(project.getName());
-                stringBuilder.append(SPACE);
+            int responseCode = connection.getResponseCode();
+            if(responseCode == HttpURLConnection.HTTP_OK) {
+                log().info("Open Repository Successfully");
+                BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+                StringBuilder sb = new StringBuilder();
+                String line;
+                while((line = reader.readLine()) != null){
+                    sb.append(line);
+                    sb.append(LINE_BREAK);
+                }
+                reader.close();
+                connection.disconnect();
+                JsonReader jsonReader = new JsonReader();
+                jsonReader.saveTxtFileFromJsonBody(sb.toString());
             }
-            bufferedWriter.write(stringBuilder.toString());
-            bufferedWriter.close();
-            log().info("File saved successfully");
-        }catch (IOException ioException){
-            log().warning("Error: fail writing file: " + ioException);
+        } catch (IOException e) {
+            log().warning("Error opening Repository: " + e);
+        } catch (ParseException e) {
+            log().warning("Error parsing: " + e);
         }
     }
 }

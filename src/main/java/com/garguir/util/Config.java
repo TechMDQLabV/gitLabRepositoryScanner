@@ -10,6 +10,7 @@ import static com.garguir.util.UtilGitLabRepositoryScanner.log;
 public class Config {
     private static final String USER = "user";
     private static final String PASSWORD = "password";
+    private static final String TOKEN = "token";
     private static final Properties PROPERTIES = new Properties();
     private static final String PATH_CONFIG = USER_DIR+"\\src\\main\\config";
     private static final String PATH_PROPERTIES = "\\config.properties";
@@ -38,6 +39,9 @@ public class Config {
 
     public String getPass(){
         return PROPERTIES.getProperty(PASSWORD);
+    }
+    public String getToken(){
+        return PROPERTIES.getProperty(TOKEN);
     }
 
 }
